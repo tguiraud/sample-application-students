@@ -10,8 +10,18 @@ before_install:
     - docker run -d -p 127.0.0.1:3306:3306 takimatraining/devops-training-db
 
 script:
-    - mvn verify
+    - |
+    mvn clean install sonar:sonar \
+    -Dsonar.projectKey="tguiraud_sample-application-students" \
+    -Dsonar.organization="tguiraud-github" \
+    -Dsonar.host.url=https://sonarcloud.io \
+    -Dsonar.login=$SONAR_TOKEN
+
 
 cache:
     directories:
         - "$HOME/.m2/repository"
+
+env:
+    global:
+        - secure: "EN43hNbqDtbZBSbnqETAJ8fbIwptgo7rEKK3HIBNJ9Q8FeJ+AKazC9I/UkSoEXUmBfJhv/ZcSs2hnbeE1rTUFek0Cro856ojq3bFJn3IV0T1qhSY/XfuV+eoSneP9YumZfu3LyPoJW1HvQ7sjYRvlj1qNIGIzc/ocR3zT5AkQoZwOSRuSmBZUim9EKNWQamGZI+kfPaTsunPM5xsERV0cm6g1ThOg3rPjtAUwwYQYfU/OziOYeP4d0NuYZeGq8BRPvpnqTIBGD1S5NSmAzU1TBjpNYIY09hF60hAftpgVgO5Ln+mHoWAX4HsOOu3kXDkITzvfw8Z7u5i61Yt3XQUmvglyWU+bmanV9pTwbESG4As24Sbp/cAc8I73wHL2c500vlOlGq5Gab4TTa9jk0mONywn5Hl77Ixsax8yjyYkfcD+iqw+w+FjHiANJxS2zVXYyUWwNrMw5aaZmiaGpuTwnxEF+daAAHye3ya72JOMFpf/WY1xA5ue5t5QX3iAENmzjZgbtXtXFCpUMaXP9zsIgiBF8kC/qGzEfmQZeF8uRfpK2vpMMV+mZB9b8D36hzoKeO4vV8l0PQ3UrbfweNtSP1u+k/75PRwDP1Tklz6V9axb/Dsc0Egg/6Sd3HvJQ7mCvY/e6/jNyXqowjdDRkYewi4g5ppaUnmIbw4rS39Imk="
