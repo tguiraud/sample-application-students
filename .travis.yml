@@ -4,10 +4,26 @@ jdk: oraclejdk8
 # Define the services to use
 services:
     - docker
+
 before_install:
     - sudo service mysql stop
     - docker pull takimatraining/devops-training-db
     - docker run -d -p 127.0.0.1:3306:3306 takimatraining/devops-training-db
+
+# Build an image containing the .jar and push it to the Docker Hub
+after_success: 
+    # Login to Docker Hub
+    - docker login -u $DOCKER_USER -p $DOCKER_PASS
+    # Tag text according to the branch
+    - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH; fi`
+    # Image name
+    - export IMAGE_NAME=takimatraining/sample-application
+    # Build the image (see Dockerfile) and tag it with the commit ID
+    - docker build -t $IMAGE_NAME:$TRAVIS_COMMIT .
+    # Retag the image with the previously choosen tag
+    - docker tag $IMAGE_NAME:$TRAVIS_COMMIT $IMAGE_NAME:$TAG
+    # Push the tagged image to Docker Hub
+    - docker push $IMAGE_NAME:$TAG
 
 script:
     - |
@@ -25,6 +41,8 @@ cache:
 env:
     global:
         - secure: "EN43hNbqDtbZBSbnqETAJ8fbIwptgo7rEKK3HIBNJ9Q8FeJ+AKazC9I/UkSoEXUmBfJhv/ZcSs2hnbeE1rTUFek0Cro856ojq3bFJn3IV0T1qhSY/XfuV+eoSneP9YumZfu3LyPoJW1HvQ7sjYRvlj1qNIGIzc/ocR3zT5AkQoZwOSRuSmBZUim9EKNWQamGZI+kfPaTsunPM5xsERV0cm6g1ThOg3rPjtAUwwYQYfU/OziOYeP4d0NuYZeGq8BRPvpnqTIBGD1S5NSmAzU1TBjpNYIY09hF60hAftpgVgO5Ln+mHoWAX4HsOOu3kXDkITzvfw8Z7u5i61Yt3XQUmvglyWU+bmanV9pTwbESG4As24Sbp/cAc8I73wHL2c500vlOlGq5Gab4TTa9jk0mONywn5Hl77Ixsax8yjyYkfcD+iqw+w+FjHiANJxS2zVXYyUWwNrMw5aaZmiaGpuTwnxEF+daAAHye3ya72JOMFpf/WY1xA5ue5t5QX3iAENmzjZgbtXtXFCpUMaXP9zsIgiBF8kC/qGzEfmQZeF8uRfpK2vpMMV+mZB9b8D36hzoKeO4vV8l0PQ3UrbfweNtSP1u+k/75PRwDP1Tklz6V9axb/Dsc0Egg/6Sd3HvJQ7mCvY/e6/jNyXqowjdDRkYewi4g5ppaUnmIbw4rS39Imk="
+        - secure: "MzjcRjBoUE+RBAgspRHhVqxd6ayKIKql3wtBN/4SI7GaUL7ZanKorXnUnqqxzXyGgj42UmGu+UW8MCCKZyTqcBLjo0r5xUBi9BLKo4BJLgGmuHhYT1C21jvD/yGl8RtGEqRdbDWcr3oWHutxphmwj+/XOv3XlP0b3X9MvXlGxEDcWoVUrKXYec8MRBUG4hACrVTGny6gBddpwPeAlj/IZuBRqMtuuCGoJDzbTr8nmvqQEhN2yKQ7+8mhgJNp3kBjn03o6Ry8AKBOnAMeDdCR6XArsgNk2bTfwrf1fFK4hT7BhyXrHSVHXGueghqSFg+eqmXQbmC96EmOC6f++LJ6pHK5irvr45Gq5M8A0pdBYfuPlPcnkXLxn+kdcnDN6EUSt8dpuKJDVPD4xVy0lsi2vFK2pQQlMaGnqKmsJFt+lTTRiuFSYMUbfvoyqwtt+Y18OzmxZC+3q85KatJ2FzSHujDDHu2O+vHI+YJPxCL8Wv9TyVWvDwQgWOc29oeG43eDaAEYDY9zWtMRdRWPpfXUtbsYSE/DYJl2JrK0z/YUu9eh0FsZ+SPGBqPmultf4ytlZHi3YcmsbQorjRqD/MxgTKbv/IqtWuJc+hkKIYxzFXl3/LVPBB3WbNkdnZ+sTzbqEzY39dtCL3B9ZsUbogI0CgD2ZxZhh2pN7fVCwG9TyVs="
+        - secure: "IPKxqSJkBQ64sltIBt3ieuMgxJJI58X+WzStVtnF/d7MXlOozB6t7KOY4HOL9k0usYGcumDxHWsK27V8J+jUjJTRAjd32in6U7/GwzHzCtLpEnSk2BRMTvobfC+dzpreHlaFupfkrDdHBZOkjmcsGpQQWEiSS1xoUI1vSAj27EDezvrIFAYZIXQrg1yqMbO3EktZ9sXYc2m8jZ9SEC/Se0CkW2OO7XjhfhqJZeXNIUDP9kUX0HFtYuS6jB2ULTMZovfWohq8Cr7bC7JnLrWKo7gXh9JBvj69J5zh6Wl3jWHSDjCNbEeRvuOgf56qe1BKY0nqQ+Vqu5mhxJDOPPri+ihxyfPi+fOMQ3Q7q0FhCinytlNYb6eIQZHi/EM1E7EaCpLKkdxXJdX7Z+Akzv7/U6t31fJNPTNgwuPBY70GYnBii6QfcoczdKKa3nh3gGHL/oRE69MCTJM//K2SW8ShT+XzGtMjN/gWDMnxpeAwebTQTJEmoBUpQ2rCqs96cM8GavsYUKQmn9i7P9m9J0H0oSZQSBvuLReEpsp+F+tNahQCy+ipShMAINvRbRbfRNllmsutXCzyCAnbevL/4AJf1vDkbXjVE1mC8w2txomHvq+iT46uScWp4crMArXZ5IYKfzGzM4mQcmn62p7ajJiQ8k4+M48PJvBkFk3EWD3nJaI="
 
 notifications:
     email:
